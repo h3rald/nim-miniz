@@ -819,6 +819,8 @@ when not(defined(MINIZ_NO_ZLIB_APIS)):
   proc tdefl_create_comp_flags_from_zip_params*(level: cint; window_bits: cint; 
       strategy: cint): mz_uint
 
+{.pop.}
+
 ### Public Library
 
 import

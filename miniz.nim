@@ -842,7 +842,8 @@ proc unzip*(src, dst: string) =
   let total = pZip.mz_zip_reader_get_num_files()
   if total == 0:
     return
-  for i in 0.countup(total-1):
+  for c in 0.countup(total.int-1):
+    let i = mz_uint(c)
     let isDir = pZip.mz_zip_reader_is_file_a_directory(i)
     if isDir == 0:
       # Extract file

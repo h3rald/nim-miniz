@@ -703,7 +703,7 @@ const
 
 # TDEFL_OUT_BUF_SIZE MUST be large enough to hold a single entire compressed output block (using static/fixed Huffman codes).
 
-when TDEFL_LESS_MEMORY: 
+when TDEFL_LESS_MEMORY > 0: 
   const 
     TDEFL_LZ_CODE_BUF_SIZE* = 24 * 1024
     TDEFL_OUT_BUF_SIZE* = (TDEFL_LZ_CODE_BUF_SIZE * 13) div 10
@@ -842,7 +842,7 @@ proc unzip*(src, dst: string) =
   let total = pZip.mz_zip_reader_get_num_files()
   if total == 0:
     return
-  for i in 0.countup(total-1):
+  for i in 0..total-1:
     let isDir = pZip.mz_zip_reader_is_file_a_directory(i)
     if isDir == 0:
       # Extract file

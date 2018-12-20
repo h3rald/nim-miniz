@@ -1,4 +1,4 @@
-import ./miniz
+import ../src/nimminiz
 import unittest
 import os
 
@@ -19,9 +19,9 @@ suite "Zip Suite":
     tmp.close()
 
     check zip.len == 0
-    zip.add_file("a.txt", archiveDir="ooo")
+    zip.add_file("a.txt", archivePath="ooo/a.txt")
     check zip.len == 1
-    zip.add_file("B.txt", archiveDir="ooo")
+    zip.add_file("B.txt", archivePath="ooo/B.txt")
     check zip.len == 2
 
     removeFile("a.txt")
@@ -35,6 +35,7 @@ suite "Zip Suite":
 
     expect KeyError:
       discard zip.extract_file("AA.txt")
+
     expect KeyError:
       # default is case sensitive.
       discard zip.extract_file("A.txt")
@@ -43,12 +44,12 @@ suite "Zip Suite":
     check fileExists("ooo/a.txt")
     check $("ooo/a.txt".readFile()) == a_txt
 
-    check zip.extract_file("a.txt", destDir="ooo/ttt/") == "ooo/ttt/a.txt"
-    check fileExists("ooo/ttt/a.txt")
-    check $("ooo/ttt/a.txt".readFile()) == a_txt
+    check zip.extract_file("a.txt", destDir="ooo/ttt/") == "ooo/ttt/ooo/a.txt"
+    check fileExists("ooo/ttt/ooo/a.txt")
+    check $("ooo/ttt/ooo/a.txt".readFile()) == a_txt
 
     check zip.extract_file("B.txt", destDir="ooo/bbb/").readFile() == b_txt
-    check fileExists("ooo/bbb/B.txt")
+    check fileExists("ooo/bbb/ooo/B.txt")
 
     removeDir("ooo")
     removeFile("testing.zip")

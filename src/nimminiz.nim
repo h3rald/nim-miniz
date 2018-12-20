@@ -862,6 +862,10 @@ type Zip* = object
   c : mz_zip_archive
   mode: FileMode
 
+template check_mode(zip: Zip, mode: mz_zip_mode, operation: string) =
+  if zip.c.addr.m_zip_mode != mode:
+    raise newException(IOError, "must be opened in another mode to " & operation)
+
 proc len*(zip: var Zip): int =
   return zip.c.addr.mz_zip_reader_get_num_files().int
 
@@ -873,11 +877,15 @@ proc open*(zip: var Zip, path: string, mode:FileMode=fmRead): bool {.discardable
   else:
     quit "unsupported mode for zip"
 
-proc add_file*(zip: var Zip, path: string, archiveDir:string="") =
+proc add_file*(zip: var Zip, path: string, archivePath:string="") =
+  check_mode(zip, MZ_ZIP_MODE_WRITING, "add_file")
   var comment:pointer
   if not fileExists(path):
     raise newException(ValueError, "no file found at:" & path)
-  doAssert zip.c.addr.mz_zip_writer_add_file((archiveDir / path.extractFileName).cstring, path.cstring, comment, 0, cast[mz_uint](3'u8 or MZ_ZIP_FLAG_CASE_SENSITIVE.uint8)) == MZ_TRUE
+  var arcPath = path.cstring
+  if archivePath != "":
+    arcPath = archivePath.cstring
+  doAssert zip.c.addr.mz_zip_writer_add_file(archivePath, path.cstring, comment, 0, cast[mz_uint](3'u8 or MZ_ZIP_FLAG_CASE_SENSITIVE.uint8)) == MZ_TRUE
 
 proc close*(zip: var Zip) =
   if zip.mode == fmRead:
@@ -923,6 +931,6 @@ proc extract_file*(zip: var Zip, path: string, destDir:string=""): string =
     raise newException(KeyError, path & " not found in zip archive")
 
   if destDir != "":
-    result = destDir / path
+    result = destDir / zip.get_file_name(found_i)
   result.parentDir.createDir()
   doAssert zip.c.addr.mz_zip_reader_extract_to_file(found_i.mz_uint, result, 0) == MZ_TRUE

@@ -1,4 +1,4 @@
-import ../src/nimminiz
+import ../src/nim_miniz
 import unittest
 import os
 

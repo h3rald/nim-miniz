@@ -1,6 +1,8 @@
 {.compile: "libminiz.c".}
 {.push importc.}
 
+import strutils
+
 when defined(i386) or defined(ia64):
     const 
       MINIZ_X86_OR_X64_CPU* = 1
@@ -306,7 +308,7 @@ when not(defined(MINIZ_NO_ARCHIVE_APIS)):
     MZ_ZIP_MAX_ARCHIVE_FILENAME_SIZE* = 260
     MZ_ZIP_MAX_ARCHIVE_FILE_COMMENT_SIZE* = 256
   type 
-    mz_zip_archive_file_stat* = object 
+    mz_zip_archive_file_stat* {.bycopy.} = object
       m_file_index*: mz_uint32
       m_central_dir_ofs*: mz_uint32
       m_version_made_by*: mz_uint16
@@ -365,27 +367,27 @@ when not(defined(MINIZ_NO_ARCHIVE_APIS)):
                                size: csize; flags: mz_uint32): mz_bool
   when not(defined(MINIZ_NO_STDIO)): 
     proc mz_zip_reader_init_file*(pZip: ptr mz_zip_archive; pFilename: cstring; 
-                                  flags: mz_uint32): mz_bool
+                                  flags: mz_uint32): mz_bool {.cdecl.}
   # Returns the total number of files in the archive.
-  proc mz_zip_reader_get_num_files*(pZip: ptr mz_zip_archive): mz_uint
+  proc mz_zip_reader_get_num_files*(pZip: ptr mz_zip_archive): mz_uint {.cdecl.}
   # Returns detailed information about an archive file entry.
   proc mz_zip_reader_file_stat*(pZip: ptr mz_zip_archive; file_index: mz_uint; 
                                 pStat: ptr mz_zip_archive_file_stat): mz_bool
   # Determines if an archive file entry is a directory entry.
   proc mz_zip_reader_is_file_a_directory*(pZip: ptr mz_zip_archive; 
-      file_index: mz_uint): mz_bool
+      file_index: mz_uint): mz_bool {.cdecl.}
   proc mz_zip_reader_is_file_encrypted*(pZip: ptr mz_zip_archive; 
                                         file_index: mz_uint): mz_bool
   # Retrieves the filename of an archive file entry.
   # Returns the number of bytes written to pFilename, or if filename_buf_size is 0 this function returns the number of bytes needed to fully store the filename.
   proc mz_zip_reader_get_filename*(pZip: ptr mz_zip_archive; 
                                    file_index: mz_uint; pFilename: cstring; 
-                                   filename_buf_size: mz_uint): mz_uint
+                                   filename_buf_size: mz_uint): mz_uint {.cdecl.}
   # Attempts to locates a file in the archive's central directory.
   # Valid flags: MZ_ZIP_FLAG_CASE_SENSITIVE, MZ_ZIP_FLAG_IGNORE_PATH
   # Returns -1 if the file cannot be found.
   proc mz_zip_reader_locate_file*(pZip: ptr mz_zip_archive; pName: cstring; 
-                                  pComment: cstring; flags: mz_uint): cint
+                                  pComment: cstring; flags: mz_uint): cint {.cdecl.}
   # Extracts a archive file to a memory buffer using no memory allocation.
   proc mz_zip_reader_extract_to_mem_no_alloc*(pZip: ptr mz_zip_archive; 
       file_index: mz_uint; pBuf: pointer; buf_size: csize; flags: mz_uint; 
@@ -417,11 +419,11 @@ when not(defined(MINIZ_NO_ARCHIVE_APIS)):
     # This function only extracts files, not archive directory records.
     proc mz_zip_reader_extract_to_file*(pZip: ptr mz_zip_archive; 
                                         file_index: mz_uint; 
-                                        pDst_filename: cstring; flags: mz_uint): mz_bool
+                                        pDst_filename: cstring; flags: mz_uint): mz_bool {.cdecl.}
     proc mz_zip_reader_extract_file_to_file*(pZip: ptr mz_zip_archive; 
         pArchive_filename: cstring; pDst_filename: cstring; flags: mz_uint): mz_bool
   # Ends archive reading, freeing all allocations, and closing the input archive file if mz_zip_reader_init_file() was used.
-  proc mz_zip_reader_end*(pZip: ptr mz_zip_archive): mz_bool
+  proc mz_zip_reader_end*(pZip: ptr mz_zip_archive): mz_bool {.cdecl.}
   # ZIP archive writing
   when not(defined(MINIZ_NO_ARCHIVE_WRITING_APIS)): 
     # Inits a ZIP archive writer.
@@ -432,7 +434,7 @@ when not(defined(MINIZ_NO_ARCHIVE_APIS)):
     when not(defined(MINIZ_NO_STDIO)): 
       proc mz_zip_writer_init_file*(pZip: ptr mz_zip_archive; 
                                     pFilename: cstring; 
-                                    size_to_reserve_at_beginning: mz_uint64): mz_bool
+                                    size_to_reserve_at_beginning: mz_uint64): mz_bool {.cdecl.}
     # Converts a ZIP archive reader object into a writer object, to allow efficient in-place file appends to occur on an existing archive.
     # For archives opened using mz_zip_reader_init_file, pFilename must be the archive's filename so it can be reopened for writing. If the file can't be reopened, mz_zip_reader_end() will be called.
     # For archives opened using mz_zip_reader_init_mem, the memory block must be growable using the realloc callback (which defaults to realloc unless you've overridden it).
@@ -440,7 +442,7 @@ when not(defined(MINIZ_NO_ARCHIVE_APIS)):
     # Note: In-place archive modification is not recommended unless you know what you're doing, because if execution stops or something goes wrong before
     # the archive is finalized the file's central directory will be hosed.
     proc mz_zip_writer_init_from_reader*(pZip: ptr mz_zip_archive; 
-        pFilename: cstring): mz_bool
+        pFilename: cstring): mz_bool {.cdecl.}
     # Adds the contents of a memory buffer to an archive. These functions record the current local time into the archive.
     # To add a directory entry, call this method with an archive name ending in a forwardslash with empty buffer.
     # level_and_flags - compression level (0-10, see MZ_BEST_SPEED, MZ_BEST_COMPRESSION, etc.) logically OR'd with zero or more mz_zip_flags, or just set to MZ_DEFAULT_COMPRESSION.
@@ -461,7 +463,7 @@ when not(defined(MINIZ_NO_ARCHIVE_APIS)):
                                    pArchive_name: cstring; 
                                    pSrc_filename: cstring; pComment: pointer; 
                                    comment_size: mz_uint16; 
-                                   level_and_flags: mz_uint): mz_bool
+                                   level_and_flags: mz_uint): mz_bool {.cdecl.}
     # Adds a file to an archive by fully cloning the data from another archive.
     # This function fully clones the source file's compressed data (no recompression), along with its full filename, extra data, and comment fields.
     proc mz_zip_writer_add_from_zip_reader*(pZip: ptr mz_zip_archive; 
@@ -469,12 +471,12 @@ when not(defined(MINIZ_NO_ARCHIVE_APIS)):
     # Finalizes the archive by writing the central directory records followed by the end of central directory record.
     # After an archive is finalized, the only valid call on the mz_zip_archive struct is mz_zip_writer_end().
     # An archive must be manually finalized by calling this function for it to be valid.
-    proc mz_zip_writer_finalize_archive*(pZip: ptr mz_zip_archive): mz_bool
+    proc mz_zip_writer_finalize_archive*(pZip: ptr mz_zip_archive): mz_bool {.cdecl.}
     proc mz_zip_writer_finalize_heap_archive*(pZip: ptr mz_zip_archive; 
-        pBuf: ptr pointer; pSize: ptr csize): mz_bool
+        pBuf: ptr pointer; pSize: ptr csize): mz_bool {.cdecl.}
     # Ends archive writing, freeing all allocations, and closing the output file if mz_zip_writer_init_file() was used.
     # Note for the archive to be valid, it must have been finalized before ending.
-    proc mz_zip_writer_end*(pZip: ptr mz_zip_archive): mz_bool
+    proc mz_zip_writer_end*(pZip: ptr mz_zip_archive): mz_bool {.cdecl.}
     # Misc. high-level helper functions:
     # mz_zip_add_mem_to_archive_file_in_place() efficiently (but not atomically) appends a memory blob to a ZIP archive.
     # level_and_flags - compression level (0-10, see MZ_BEST_SPEED, MZ_BEST_COMPRESSION, etc.) logically OR'd with zero or more mz_zip_flags, or just set to MZ_DEFAULT_COMPRESSION.
@@ -855,3 +857,82 @@ proc unzip*(src, dst: string) =
       discard pZip.mz_zip_reader_extract_to_file(i, dest, 0)
   discard pZip.mz_zip_reader_end()
   dealloc(pZip)
+
+type Zip* = object
+  c : mz_zip_archive
+  mode: FileMode
+
+template check_mode(zip: Zip, mode: mz_zip_mode, operation: string) =
+  if zip.c.addr.m_zip_mode != mode:
+    raise newException(IOError, "must be opened in another mode to " & operation)
+
+proc len*(zip: var Zip): int =
+  return zip.c.addr.mz_zip_reader_get_num_files().int
+
+proc open*(zip: var Zip, path: string, mode:FileMode=fmRead): bool {.discardable.} =
+  zip.mode = mode
+  if mode == fmWrite:
+    return zip.c.addr.mz_zip_writer_init_file(path.cstring, 0) == 1
+  elif mode == fmRead:
+    return zip.c.addr.mz_zip_reader_init_file(path.cstring, 0) == 1
+  else:
+    quit "unsupported mode for zip"
+
+proc add_file*(zip: var Zip, path: string, archivePath:string="") =
+  check_mode(zip, MZ_ZIP_MODE_WRITING, "add_file")
+  var comment:pointer
+  if not fileExists(path):
+    raise newException(ValueError, "no file found at:" & path)
+  var arcPath = path.cstring
+  if archivePath != "":
+    arcPath = archivePath.cstring
+  doAssert zip.c.addr.mz_zip_writer_add_file(archivePath, path.cstring, comment, 0, cast[mz_uint](3'u8 or MZ_ZIP_FLAG_CASE_SENSITIVE.uint8)) == MZ_TRUE
+
+proc close*(zip: var Zip) =
+  if zip.mode == fmWrite:
+    doAssert zip.c.addr.mz_zip_writer_finalize_archive() == MZ_TRUE
+    doAssert zip.c.addr.mz_zip_writer_end() == MZ_TRUE
+  elif zip.mode == fmRead:
+    doAssert zip.c.addr.mz_zip_reader_end() == MZ_TRUE
+
+proc get_file_name(zip: var Zip, i:int): string {.inline.} =
+  var size = zip.c.addr.mz_zip_reader_get_filename(i.mz_uint, result, 0)
+  result.setLen(size.int)
+  doAssert zip.c.addr.mz_zip_reader_get_filename(i.mz_uint, result, size) > 0.mz_uint
+  # drop trailing byte.
+  result = result[0..<result.high]
+
+iterator pairs*(zip: var Zip): (int, string) =
+  ## yield each path to each file in the archive
+  for i in 0..<zip.len:
+    if zip.c.addr.mz_zip_reader_is_file_a_directory(i.mz_uint) == MZ_TRUE: continue
+    yield (i, zip.get_file_name(i))
+
+proc extract_file*(zip: var Zip, path: string, destDir:string=""): string =
+  ## extract a single file at the given path from the zip archive and return the path to which it
+  ## was extracted.
+  var i = zip.c.addr.mz_zip_reader_locate_file(path, "", 0)
+  if i != -1:
+    var dest = destDir / zip.get_file_name(i)
+    dest.parentDir.createDir()
+    doAssert zip.c.addr.mz_zip_reader_extract_to_file(i.mz_uint, dest, 0) == MZ_TRUE
+    return $dest
+
+  # didn't find exact match, check for suffix match.
+  var foundi = -1
+  for i, f in zip:
+    if f.endsWith(path):
+      if result.len != 0:
+        # if here, we've already found one result that matches. so we have an error.
+        raise newException(KeyError, path & " ambiguous in zip archive")
+      result = $f
+      found_i = i
+
+  if result.len == 0:
+    raise newException(KeyError, path & " not found in zip archive")
+
+  if destDir != "":
+    result = destDir / zip.get_file_name(found_i)
+  result.parentDir.createDir()
+  doAssert zip.c.addr.mz_zip_reader_extract_to_file(found_i.mz_uint, result, 0) == MZ_TRUE
+  return result

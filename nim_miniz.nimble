@@ -1,8 +1,8 @@
 # Package
 
-version       = "0.2.5"
+version       = "1.0.0"
 author        = "Fabio Cevasco"
-description   = "nim wrapper for miniz"
+description   = "Nim wrapper for miniz"
 license       = "MIT"
 
 installExt = @["nim", "c", "h"]

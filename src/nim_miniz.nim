@@ -241,10 +241,12 @@ when not(defined(MINIZ_NO_ZLIB_APIS)):
       Z_FIXED* = MZ_FIXED
       Z_DEFLATED* = MZ_DEFLATED
       Z_DEFAULT_WINDOW_BITS* = MZ_DEFAULT_WINDOW_BITS
+    type
       alloc_func* = mz_alloc_func
       free_func* = mz_free_func
       internal_state* = mz_internal_state
       z_stream* = mz_stream
+    const
       deflateInit* = mz_deflateInit
       deflateInit2* = mz_deflateInit2
       deflateReset* = mz_deflateReset

@@ -553,10 +553,10 @@ type
 
 # Initializes the decompressor to its initial state.
 ##define tinfl_init(r) do { (r)->m_state = 0; } MZ_MACRO_END
-template tinfl_init*(r: typed): typed =
+template tinfl_init*(r: typed): void=
   r.m_state = 0
 
-template tinfl_get_adler32*(r: typed): typed = 
+template tinfl_get_adler32*(r: typed): void= 
   (r).m_check_adler32
 
 # Main low-level decompressor coroutine function. This is the only function actually needed for decompression. All the other functions are just high-level helpers for improved usability.
@@ -888,7 +888,7 @@ proc add_file*(zip: var Zip, path: string, archivePath:string="") =
   var arcPath = path.cstring
   if archivePath != "":
     arcPath = archivePath.cstring
-  doAssert zip.c.addr.mz_zip_writer_add_file(archivePath, path.cstring, comment, 0, cast[mz_uint](3'u8 or MZ_ZIP_FLAG_CASE_SENSITIVE.uint8)) == MZ_TRUE
+  doAssert zip.c.addr.mz_zip_writer_add_file(archivePath, path.cstring, comment, 0, cast[mz_uint](3'u16 or MZ_ZIP_FLAG_CASE_SENSITIVE.uint16)) == MZ_TRUE
 
 proc close*(zip: var Zip) =
   if zip.mode == fmWrite:

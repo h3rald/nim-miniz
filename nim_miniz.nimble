@@ -1,6 +1,6 @@
 # Package
 
-version       = "1.0.1"
+version       = "1.1.0"
 author        = "Fabio Cevasco"
 description   = "Nim wrapper for miniz"
 license       = "MIT"

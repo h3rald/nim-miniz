@@ -47,9 +47,11 @@ suite "Zip Suite":
     check zip.extract_file("a.txt", destDir="ooo/ttt/") == "ooo/ttt/ooo/a.txt"
     check fileExists("ooo/ttt/ooo/a.txt")
     check $("ooo/ttt/ooo/a.txt".readFile()) == a_txt
+    check zip.extract_file_to_string("a.txt")== a_txt
 
     check zip.extract_file("B.txt", destDir="ooo/bbb/").readFile() == b_txt
     check fileExists("ooo/bbb/ooo/B.txt")
+    check zip.extract_file_to_string("B.txt")== b_txt
 
     removeDir("ooo")
     removeFile("testing.zip")
